@@ -83,7 +83,7 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
         urlTapHandler = handler
     }
     
-    open func handleCustomTap(for type: ActiveType, handler: @escaping (String) -> ()) {
+    open func handleCustomTap(for type: ActiveType, handler: @escaping (String, NSRange) -> ()) {
         customTapHandlers[type] = handler
     }
     
@@ -221,7 +221,7 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
             case .mention(let userHandle): didTapMention(userHandle)
             case .hashtag(let hashtag): didTapHashtag(hashtag)
             case .url(let originalURL, _): didTapStringURL(originalURL)
-            case .custom(let element): didTap(element, for: selectedElement.type)
+            case .custom(let element): didTap(element, for: selectedElement.type, range: selectedElement.range)
             case .email(let element): didTapStringEmail(element)
             }
             
@@ -251,7 +251,7 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
     internal var hashtagTapHandler: ((String) -> ())?
     internal var urlTapHandler: ((URL) -> ())?
     internal var emailTapHandler: ((String) -> ())?
-    internal var customTapHandlers: [ActiveType : ((String) -> ())] = [:]
+    internal var customTapHandlers: [ActiveType : ((String, NSRange) -> ())] = [:]
     
     fileprivate var mentionFilterPredicate: ((String) -> Bool)?
     fileprivate var hashtagFilterPredicate: ((String) -> Bool)?
@@ -525,12 +525,12 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
         emailHandler(stringEmail)
     }
     
-    fileprivate func didTap(_ element: String, for type: ActiveType) {
+    fileprivate func didTap(_ element: String, for type: ActiveType, range: NSRange) {
         guard let elementHandler = customTapHandlers[type] else {
             delegate?.didSelect(element, type: type)
             return
         }
-        elementHandler(element)
+        elementHandler(element, range)
     }
 }
 
